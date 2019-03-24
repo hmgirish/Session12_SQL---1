@@ -1,0 +1,87 @@
+Read the following data set:
+https://archive.ics.uci.edu/ml/machine-learning-databases/adult/
+Rename the columns as per the description from this file:
+https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.names
+
+Task:
+
+Create a sql db from adult dataset and name it sqladb
+
+Solution:
+
+import numpy as np
+import pandas as pd
+from pandas import DataFrame, Series
+import sqlite3 as db
+
+from pandasql import sqldf
+import sqlite3
+db = sqlite3.connect("sqladb")
+cur = db.cursor()
+
+sql = "CREATE TABLE adultTable (age INTEGER, workclass VARCHAR(255), fnlwgt INTEGER, education VARCHAR(255), education_num INTEGER, marital_status VARCHAR(255), occupation VARCHAR(255), relationship VARCHAR(255), race VARCHAR(255), sex VARCHAR(255), capital_gain INTEGER, capital_loss INTEGER, hours_per_week INTEGER, native_country VARCHAR(255), moreThan50K VARCHAR(255));"
+cur.execute(sql)
+
+table_data = csv.reader(file('sample.csv'))
+for row in table_data:
+  cur.execute('INSERT INTO adultTable VALUES("%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s"))
+db.commit()
+
+1. Select 10 records from the adult sqladb
+
+Solution:
+
+cur.execute("SELECT * FROM adultTable LIMIT 10")
+myresult = cur.fetchall()
+for x in myresult:
+    print(x)
+    
+2. Show me the average hours per week of all men who are working in private sector
+
+Solution:
+
+cur.execute("SELECT AVG(hours_per_week) average_hours_per_week FROM adultTable WHERE workclass = 'Private'")
+myresult = cur.fetchall()
+for x in myresult:
+    print(x)
+    
+3. Show me the frequency table for education, occupation and relationship, separately
+
+Solution:
+
+  a. Eduction:
+     cur.execute("SELECT education , COUNT(education) frequency FROM adultTable GROUP BY education")
+     myresult = cur.fetchall()
+     for x in myresult:
+        print(x)
+        
+  b. Occupation:
+     cur.execute("SELECT occupation, COUNT(occupation) frequency FROM adultTable GROUP BY occupation")
+     myresult = cur.fetchall()
+     for x in myresult:
+        print(x)
+      
+  c. Relationship
+     cur.execute("SELECT relationship, COUNT(relationship) frequency FROM adultTable GROUP BY relationship ")
+     myresult = cur.fetchall()
+     for x in myresult:
+        print(x)
+      
+4. Are there any people who are married, working in private sector and having a masters degree
+
+Solution:
+
+cur.execute("SELECT IF(count > 0, 'Yes', 'No') exist FROM ( SELECT COUNT(marital_status) count FROM adultTable WHERE marital_status IN ('Married_civ_spouse', 'Married_spouse_absent' , 'Married_AF_spouse')) alias ")
+myresult = cur.fetchall()
+for x in myresult:
+    print(x)
+    
+5. What is the average, minimum and maximum age group for people working in different sectors
+
+Solution:
+
+cur.execute("SELECT workclass as sector, AVG(age) averageAge, MIN(age) minAge, MAX(age) maxAge  FROM adultTable GROUP BY workclass")
+myresult = cur.fetchall()
+for x in myresult:
+  print(x)
+  
